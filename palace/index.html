@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>记忆宫殿 · 框架 1.0</title>
+<style>
+  :root{
+    --paper:#F3F6F8; --ink:#26282B; --deep:#2E6CA6; --deep-soft:#E3EDF6;
+    --line:rgba(38,40,43,.12); --bad:#B5483C; --gold:#C99A2E; --dim:#8B8378;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC","Songti SC","Microsoft YaHei",sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:540px;margin:0 auto;padding:24px 18px 44px}
+  header{text-align:center;margin-bottom:18px}
+  h1{margin:0 0 4px;font-size:21px;font-weight:600;letter-spacing:.1em}
+  .sub{margin:0;font-size:13px;color:var(--dim);min-height:20px}
+
+  .card{background:#fff;border:1px solid rgba(38,40,43,.09);border-radius:14px;padding:16px 18px}
+  .intro p{margin:0 0 8px;font-size:14.5px}
+  .intro p:last-child{margin:0}
+  .dim{color:var(--dim)}
+
+  .palace{
+    display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;
+    margin-bottom:8px;cursor:pointer;font-family:inherit;color:inherit;transition:border-color .15s,box-shadow .15s;
+  }
+  .palace:hover{border-color:var(--deep)}
+  .palace:active{background:#F7F4EC}
+  .palace .p-main{flex:1;min-width:0}
+  .palace .p-name{display:block;font-size:17px;font-weight:600}
+  .palace .p-desc{display:block;font-size:12.5px;color:var(--dim);margin-top:2px}
+  .palace .p-prog{font-size:12px;color:#A9A194;white-space:nowrap;font-variant-numeric:tabular-nums;text-align:right}
+  .palace .p-prog i{display:block;font-style:normal;font-size:11px;margin-top:2px;color:var(--deep)}
+
+  .room{
+    display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+    margin-bottom:8px;cursor:pointer;font-family:inherit;color:inherit;transition:border-color .15s;
+  }
+  .room:hover{border-color:var(--deep)}
+  .room:active{background:#F7F4EC}
+  .room .bar-r{width:4px;align-self:stretch;border-radius:3px;background:var(--deep);opacity:.85}
+  .room .r-main{flex:1;min-width:0}
+  .room .r-name{display:block;font-size:16px;font-weight:600;line-height:1.4}
+  .room .r-sub{display:block;font-size:12.5px;color:var(--dim);margin-top:1px;line-height:1.4}
+  .room .r-prog{font-size:12px;color:#A9A194;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+  .back{
+    display:inline-block;background:none;border:0;padding:0;margin:0 0 12px;
+    font:inherit;font-size:13px;color:var(--deep);cursor:pointer;
+  }
+
+  .bar{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--dim);margin-bottom:10px}
+  .bar .left{display:flex;align-items:center;gap:6px;min-width:0}
+  .bar .bar-back{background:none;border:0;padding:0;font:inherit;font-size:15px;line-height:1;color:var(--deep);cursor:pointer}
+  .bar .acts{display:flex;gap:6px}
+  .bar .hint-btn{
+    background:none;border:1px dashed rgba(38,40,43,.28);border-radius:999px;
+    padding:2px 10px;font:inherit;font-size:12px;color:var(--deep);cursor:pointer;
+  }
+
+  .loc-card{
+    background:#fff;border:1px solid rgba(38,40,43,.09);border-left:4px solid var(--deep);
+    border-radius:4px 14px 14px 4px;padding:12px 16px;margin-bottom:14px;
+  }
+  .loc-room{font-size:12.5px;letter-spacing:.06em}
+  .loc-spot{font-size:22px;font-weight:600;margin-top:2px}
+  .q{font-size:14px;color:#6E675D;margin-top:8px}
+  .loc-cue{
+    margin-top:12px;font-size:13.5px;line-height:1.6;color:#5F5A52;
+    background:rgba(38,40,43,.045);border-radius:0 8px 8px 0;border-left:3px solid rgba(38,40,43,.12);
+    padding:8px 10px;
+  }
+  .loc-cue b{display:block;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--deep);margin-bottom:2px}
+
+  .item-no{
+    display:inline-block;font-size:12px;color:var(--deep);background:var(--deep-soft);
+    border-radius:6px;padding:1px 8px;font-variant-numeric:tabular-nums;letter-spacing:.04em;
+  }
+  .tag{font-size:11px;color:#fff;background:var(--bad);border-radius:4px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+  .item-title{font-size:19px;font-weight:600;margin:8px 0 10px;line-height:1.4}
+  .pts{list-style:none;margin:0;padding:0}
+  .pts li{position:relative;padding-left:14px;margin-bottom:7px;font-size:14.5px;line-height:1.7}
+  .pts li:before{content:"";position:absolute;left:2px;top:.62em;width:5px;height:5px;border-radius:50%;background:rgba(38,40,43,.25)}
+  .pts b{color:var(--deep);font-weight:600}
+  .pts li:last-child{margin-bottom:0}
+  .item-block + .item-block{margin-top:18px;padding-top:16px;border-top:1px dashed rgba(38,40,43,.12)}
+
+  .note-label{display:block;font-size:12.5px;color:var(--dim);margin:16px 0 6px}
+  .note{
+    width:100%;border:1px solid rgba(38,40,43,.14);border-radius:10px;padding:11px 13px;
+    font:inherit;font-size:14.5px;background:#fff;color:inherit;outline:none;
+  }
+  .note:focus{border-color:var(--deep)}
+
+  .btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font:inherit;font-size:16px;cursor:pointer;font-family:inherit}
+  .btn.primary{background:var(--deep);color:#fff;margin-top:14px}
+  .btn.primary:active{filter:brightness(.92)}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);margin-top:10px}
+
+  .rate{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
+  .rate button{
+    border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 4px;
+    font:inherit;font-size:14.5px;cursor:pointer;color:inherit;
+  }
+  .rate button:hover{background:#F7F4EC}
+  .rate .r0{border-color:rgba(181,72,60,.35);color:var(--bad)}
+  .rate .r1{border-color:rgba(201,154,46,.4);color:#A87F1E}
+  .rate .r2{border-color:rgba(38,40,43,.18);color:var(--deep)}
+
+  .score{text-align:center;margin:8px 0 18px}
+  .score-num{font-size:40px;font-weight:600;color:var(--deep);line-height:1.1;font-variant-numeric:tabular-nums}
+  .score-label{font-size:14px;color:#6E675D;margin-top:4px}
+  .breakdown{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:16px 0 20px;text-align:center}
+  .breakdown>div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 4px}
+  .breakdown .n{font-size:22px;font-weight:600}
+  .breakdown .l{font-size:12px;color:var(--dim)}
+  .breakdown .b0 .n{color:var(--bad)}
+  .breakdown .b1 .n{color:#A87F1E}
+  .breakdown .b2 .n{color:var(--deep)}
+
+  .palettes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+  .palette{
+    background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 4px 7px;
+    cursor:pointer;font-family:inherit;color:inherit;
+  }
+  .palette:hover{border-color:var(--deep)}
+  .palette.on{border-color:var(--deep);box-shadow:0 0 0 2px var(--deep-soft)}
+  .palette .sw{display:flex;justify-content:center;gap:3px;margin-bottom:5px}
+  .palette .sw i{width:9px;height:9px;border-radius:50%;display:block;border:1px solid rgba(0,0,0,.08)}
+  .palette .pn{font-size:11px;color:#6E675D}
+  .pal-lab{font-size:12px;color:var(--dim);margin:0 0 8px;letter-spacing:.06em}
+
+  .progress-all{height:6px;border-radius:3px;background:rgba(38,40,43,.08);overflow:hidden;margin:14px 0 6px}
+  .progress-all i{display:block;height:100%;background:var(--deep);border-radius:3px}
+  .tip{font-size:12px;color:#A9A194;text-align:center;margin:14px 0 0}
+  .flash{font-size:12.5px;color:var(--deep);text-align:center;margin:10px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 id="appName">记忆宫殿</h1>
+    <p class="sub" id="sub">框架 1.0</p>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* =========================================================================
+   记忆宫殿 · 框架 1.0
+   -------------------------------------------------------------------------
+   结构：地点 PALACE → 房间 ROOM → 陈设 SPOT → 条目 ITEM
+   加内容只改下面的「内容区」，逻辑与样式不用动：
+
+   ① 加条目：在 ITEMS 里加一条
+        '教01': { no:'教01', title:'名称', tag:'', pts:['要点一','要点二'] }
+        pts 里可以用 <b>…</b> 标关键词。
+
+   ② 加地点：在 PALACES 里加一个对象
+        { id:'school', name:'学校', desc:'一句话说明',
+          rooms:[ { id:'gate', name:'校门', sub:'小标题',
+                    spots:[ { s:'石碑', ids:['教01'] } ] } ] }
+
+   ③ 加房间：往 rooms 数组里加一个对象即可，颜色自动按顺序取。
+
+   ④ 一个陈设放多条：ids:['教01','教02']，卡片会并排显示，一起评级。
+
+   ⑤ 条号全局唯一。跨学科用前缀区分：发 / 教 / 统 / 测。
+   ========================================================================= */
+
+var APP = {
+  title: '记忆宫殿',
+  sub: '框架 1.0',
+  key: 'palace.frame.v1',
+  themeKey: 'palace.frame.theme.v1'
+};
+
+/* ========================= 内容区 ========================= */
+var ITEMS = {
+  '发01': { no:'发01', title:'毕生发展观（巴尔特斯）', pts:[
+    '五特点：<b>毕生性、多向性、可塑性、历史情境性、多学科性</b>',
+    '核心命题：发展是<b>获得与丧失的动态平衡</b>，任何年龄都有可塑性',
+    '钩：毕·多·可·历·多'
+  ]},
+  '发02': { no:'发02', title:'SOC 模型', pts:[
+    '<b>选择（S）—优化（O）—补偿（C）</b>',
+    '资源下降时：收缩目标、优化投入、用替代手段补偿'
+  ]},
+  '发03': { no:'发03', title:'发展的一般规律', pts:[
+    '<b>顺序性</b>：头尾律（由上到下）、近远律（中心到外周）、由粗到细',
+    '<b>连续性与阶段性统一</b>（量变与质变的统一）',
+    '<b>不平衡性</b>：关键期 / 敏感期、发展加速期',
+    '个别差异；<b>年龄特征</b>既有稳定性又有可变性'
+  ]},
+  '发04': { no:'发04', title:'遗传与环境之争', pts:[
+    '高尔顿：遗传决定论；华生：环境决定论（「给我一打儿童」）',
+    '格塞尔：<b>成熟势力说</b>（双生子爬梯）→ 斯卡尔「遗传限」',
+    '现代主流：<b>相互作用论</b>；基因型—环境相关三型：<b>被动型、唤起型、主动型</b>'
+  ]},
+  '发05': { no:'发05', title:'关键期 / 敏感期', pts:[
+    '来源：洛伦兹<b>印刻</b>；语言关键期（伦内伯格）；依恋关键期',
+    '现多用<b>敏感期</b>：错过有补偿空间，非「过时不可逆」'
+  ]},
+  '发06': { no:'发06', title:'研究方法', pts:[
+    '<b>横断</b>：快、省，受<b>同辈效应</b>干扰',
+    '<b>纵向</b>：能看个体变化，慢，有练习效应与样本流失',
+    '<b>聚合交叉</b>：二者结合，最理想'
+  ]},
+  '发07': { no:'发07', title:'皮亚杰的机制', pts:[
+    '<b>图式</b>',
+    '<b>同化</b>（量变，纳入原有图式）',
+    '<b>顺应</b>（质变，改造图式）',
+    '<b>平衡化</b>（内在动力）'
+  ]},
+  '发08': { no:'发08', title:'皮亚杰四阶段', tag:'最高频', pts:[
+    '感知运动 0–2：<b>客体永久性</b>（8–12 月）、循环反应三级、<b>A 非 B 错误</b>、延迟模仿',
+    '前运算 2–7：符号 / 表象功能、<b>自我中心</b>（三山实验）、泛灵论、<b>不守恒</b>、中心化、不可逆、集体独白',
+    '具体运算 7–11：<b>守恒</b>、去中心化、可逆性、分类、序列化、传递性；仍离不开具体事物',
+    '形式运算 11+：<b>假设演绎推理</b>、命题运算、抽象与系统性、理想主义'
+  ]},
+  '发09': { no:'发09', title:'皮亚杰的评价', pts:[
+    '低估儿童能力（现代研究显示成就提前）；阶段跨文化一致性存疑',
+    '忽视社会文化、教育与语言的作用；低估<b>领域特殊性</b>'
+  ]},
+  '发10': { no:'发10', title:'维果茨基', pts:[
+    '高级心理机能<b>社会起源</b>；<b>心理工具（符号）中介</b>；<b>内化</b>',
+    '<b>最近发展区（ZPD）</b>：现有水平与潜在水平之间的差距',
+    '<b>教学应走在发展前面</b>；引申出<b>支架式教学</b>（布鲁纳）'
+  ]},
+  '发11': { no:'发11', title:'自我中心言语之争', tag:'对比必考', pts:[
+    '皮亚杰：认知不成熟的产物，最终<b>消失</b>',
+    '维果茨基：社会言语<b>内化</b>的过渡，最终转为<b>内部言语</b>'
+  ]},
+  '发12': { no:'发12', title:'皮亚杰 vs 维果茨基', tag:'对比必考', pts:[
+    '来源：<b>个体建构 vs 社会建构</b>',
+    '机制：<b>平衡化 vs 内化</b>',
+    '教育：<b>不宜超前教 vs 教学走在发展前面</b>',
+    '语言与思维：<b>思维决定语言 vs 语言塑造思维</b>'
+  ]},
+  '发13': { no:'发13', title:'信息加工观', pts:[
+    '关注<b>加工速度、工作记忆容量、策略、元认知</b>',
+    '主张发展是<b>连续的量的变化</b>，反对阶段质变',
+    '代表：<b>重叠波理论</b>（西格勒）、资源有限说（凯斯）'
+  ]},
+  '发14': { no:'发14', title:'生态系统理论（布朗芬布伦纳）', pts:[
+    '<b>微系统 → 中间系统 → 外层系统 → 宏观系统 → 时间系统</b>'
+  ]},
+  '发15': { no:'发15', title:'埃里克森八阶段', tag:'必默写', pts:[
+    '信任—不信任（0–1.5）｜自主—羞怯（1.5–3）｜主动—内疚（3–6）｜勤奋—自卑（6–12）',
+    '同一性—角色混乱（12–18）｜亲密—孤独（18–35）｜繁殖—停滞（35–60）｜自我整合—绝望（60+）',
+    '钩：信·自·主·勤｜同·亲·繁·整'
+  ]},
+  '发16': { no:'发16', title:'语言发展理论', pts:[
+    '<b>强化说</b>（斯金纳）',
+    '<b>先天论 / LAD</b>（乔姆斯基）',
+    '<b>交互作用论</b>（先天＋环境，主流）'
+  ]},
+  '发17': { no:'发17', title:'心理理论（ToM）', pts:[
+    '<b>错误信念任务</b>约 4 岁通过；愿望—信念推理',
+    '<b>自闭症</b>儿童 ToM 缺陷'
+  ]},
+  '发18': { no:'发18', title:'道德发展三理论', pts:[
+    '皮亚杰：<b>他律道德</b>（重结果）→ <b>自律道德</b>（重动机），10–11 岁转折',
+    '科尔伯格：三水平六阶段——前习俗（惩罚服从、朴素利己）→ 习俗（好孩子、维护秩序）→ 后习俗（社会契约、普遍伦理）',
+    '吉利根：<b>关怀伦理</b>；特里尔：<b>社会领域理论</b>（道德 / 社会习俗 / 个人事务）'
+  ]},
+  '发19': { no:'发19', title:'婴儿动作发展规律', pts:[
+    '<b>头尾</b>（由上到下）、<b>近远</b>（中心到外周）、整体到分化、无意到有意、粗到细'
+  ]},
+  '发20': { no:'发20', title:'婴儿感知觉', pts:[
+    '<b>优先发展</b>；<b>视觉悬崖</b>（吉布森，6 个月有深度知觉）；面部偏好；偏好母亲声音',
+    '结论：<b>知觉发展早于动作发展</b>'
+  ]},
+  '发21': { no:'发21', title:'婴儿记忆', pts:[
+    '<b>再认先于回忆</b>；<b>延迟模仿</b>（9 个月起）；<b>婴儿期记忆缺失</b>'
+  ]},
+  '发22': { no:'发22', title:'气质类型（托马斯—切斯）', pts:[
+    '<b>容易型</b>约 40%、<b>困难型</b>约 10%、<b>迟缓型</b>约 15%，其余为混合型',
+    '气质是依恋与人格发展的基础；<b>拟合优度</b>：养育方式与气质匹配才有利'
+  ]},
+  '发23': { no:'发23', title:'依恋四阶段（鲍尔比）', pts:[
+    '无差别反应（0–3 月）→ 有差别反应（3–6 月）→ <b>特殊情感联结</b>（6 月–2 岁，陌生人焦虑与分离焦虑高峰）→ <b>互惠关系</b>（2 岁后）'
+  ]},
+  '发24': { no:'发24', title:'陌生情境与依恋四类型（安斯沃斯）', tag:'必考', pts:[
+    '<b>安全型</b>约 65%：以母亲为安全基地，分离焦虑，重聚易被安抚',
+    '<b>回避型</b>约 20%：对母亲在场离开均淡漠，重聚无反应',
+    '<b>反抗 / 矛盾型</b>约 10%：黏母，重聚既求接触又抗拒',
+    '<b>组织混乱型</b>约 5%：行为矛盾无组织，多见于受虐儿童',
+    '影响因素：<b>养育敏感性</b>、婴儿气质、家庭环境；形成<b>内部工作模型</b>'
+  ]},
+  '发25': { no:'发25', title:'哈洛恒河猴', pts:[
+    '<b>接触安慰 &gt; 喂食</b>；依恋不是「喂食的副产品」'
+  ]},
+  '发26': { no:'发26', title:'情绪与自我里程碑', pts:[
+    '<b>社会性微笑</b> 2–3 月；<b>陌生人焦虑</b> 6–8 月；<b>分离焦虑</b> 8 月—1.5~2 岁高峰',
+    '<b>点红实验</b>（阿姆斯特丹）：18–24 月出现镜像自我'
+  ]},
+  '发27': { no:'发27', title:'游戏（幼儿期主导活动）', pts:[
+    '帕滕 6 级社会性水平：<b>无所事事 → 旁观 → 单独 → 平行 → 联合 → 合作</b>',
+    '皮亚杰按认知分：<b>练习性 → 象征性 → 规则性</b>',
+    '游戏理论：霍尔复演说、格罗斯生活预备说、精神分析（宣泄）、皮亚杰（<b>同化大于顺应</b>）'
+  ]},
+  '发28': { no:'发28', title:'幼儿认知', pts:[
+    '<b>具体形象思维</b>为主、抽象逻辑萌芽；自我中心、泛灵论、不守恒',
+    '词汇量：3 岁约 1000 → 6 岁约 3000–4000；掌握基本语法'
+  ]},
+  '发29': { no:'发29', title:'幼儿社会性', pts:[
+    '性别（科尔伯格）：认同 2–3 岁 → 稳定性 4–5 岁 → <b>恒常性 5–7 岁</b>',
+    '<b>第一反抗期 3–4 岁</b>；攻击由<b>工具性</b>转向<b>敌意性</b>',
+    '自我评价：从依从到独立、从外部到内部、从个别到一般'
+  ]},
+  '发30': { no:'发30', title:'童年期', pts:[
+    '<b>学习成为主导活动</b>；思维由具体形象向抽象逻辑过渡，<b>小学四年级（10–11 岁）是关键转折</b>',
+    '元认知出现；道德由他律转为自律'
+  ]},
+  '发31': { no:'发31', title:'塞尔曼观点采择 5 阶段', pts:[
+    '<b>自我中心（3–6）→ 社会信息（6–8）→ 自我反省（8–10）→ 相互观点采择（10–12）→ 社会习俗系统（12+）</b>'
+  ]},
+  '发32': { no:'发32', title:'塞尔曼友谊 5 阶段', pts:[
+    '<b>暂时性游戏伙伴 → 单向帮助 → 双向合作 → 亲密共享 → 自主共存</b>'
+  ]},
+  '发33': { no:'发33', title:'青少年认知与自我中心', pts:[
+    '形式运算占优势；<b>假想观众</b>（高估他人对自己的关注）＋<b>个人神话</b>（自认独特、无坚不摧）',
+    '<b>辨析</b>：幼儿自我中心＝不能区分自己与他人的视角；青少年自我中心＝过度关注自我'
+  ]},
+  '发34': { no:'发34', title:'青少年同一性', pts:[
+    '埃里克森：<b>同一性 vs 角色混乱</b>',
+    '玛西亚四状态：<b>同一性获得</b>（探索后承诺）、<b>延缓</b>（探索中未承诺）、<b>早闭</b>（未探索即承诺）、<b>扩散</b>（无探索无承诺）'
+  ]},
+  '发35': { no:'发35', title:'青少年情绪与关系', pts:[
+    '情绪两极性（霍尔「<b>暴风骤雨期</b>」）；<b>同伴从众达峰</b>；亲子冲突增加但依恋仍强'
+  ]},
+  '发36a': { no:'发36', title:'成年初期', pts:[
+    '<b>亲密 vs 孤独</b>；爱情三角（斯腾伯格：<b>激情、亲密、承诺</b>）；职业探索'
+  ]},
+  '发36b': { no:'发36', title:'成年中期', pts:[
+    '<b>繁殖 vs 停滞</b>；更年期；「三明治一代」；<b>中年危机证据有限，非普遍现象</b>'
+  ]},
+  '发36c': { no:'发36', title:'成年晚期', pts:[
+    '<b>自我整合 vs 绝望</b>；退休适应；丧偶适应'
+  ]},
+  '发37': { no:'发37', title:'老化理论四说', pts:[
+    '<b>离脱理论</b>（自然脱离，双方满意）｜<b>活动理论</b>（保持活动才满意）',
+    '<b>连续性理论</b>（延续早年生活方式）｜<b>社会情绪选择理论</b>（卡斯滕森：未来时间有限 → 优先情绪意义目标）'
+  ]},
+  '发38': { no:'发38', title:'老年智力', pts:[
+    '卡特尔：<b>流体智力</b>青年达峰后下降；<b>晶体智力</b>持续上升或稳定',
+    '巴尔特斯：<b>可塑性仍存在</b>；加工速度、工作记忆、抑制功能下降',
+    '<b>柏林智慧模型</b>；词汇量不随年龄明显衰退'
+  ]},
+  '发39': { no:'发39', title:'库布勒—罗斯临终五阶段', pts:[
+    '<b>否认 → 愤怒 → 讨价还价 → 抑郁 → 接受</b>'
+  ]},
+  '实01': { no:'发40', title:'双生子爬梯 · 格塞尔', pts:['<b>成熟决定发展</b>'] },
+  '实02': { no:'发40', title:'视觉悬崖 · 吉布森', pts:['<b>6 个月</b>有深度知觉'] },
+  '实03': { no:'发40', title:'恒河猴 · 哈洛', pts:['<b>接触安慰 &gt; 喂食</b>'] },
+  '实04': { no:'发40', title:'陌生情境 · 安斯沃斯', pts:['<b>依恋四类型</b>'] },
+  '实05': { no:'发40', title:'点红实验 · 阿姆斯特丹', pts:['<b>18–24 月</b>有镜像自我'] },
+  '实06': { no:'发40', title:'三山实验 · 皮亚杰', pts:['<b>前运算期自我中心</b>'] },
+  '实07': { no:'发40', title:'守恒实验 · 皮亚杰', pts:['<b>前运算不守恒 / 具体运算守恒</b>'] },
+  '实08': { no:'发40', title:'两难故事 · 科尔伯格', pts:['<b>道德判断三水平六阶段</b>'] },
+  '实09': { no:'发40', title:'观点采择两难 · 塞尔曼', pts:['<b>观点采择 / 友谊的阶段</b>'] },
+  '实10': { no:'发40', title:'波波玩偶 · 班杜拉', pts:['<b>观察学习、攻击行为习得</b>'] },
+  '实11': { no:'发40', title:'水下打靶 · 贾德', pts:['<b>概括化产生迁移</b>（与教心共用）'] }
+};
+
+var PALACES = [
+  {
+    "id": "home",
+    "name": "家",
+    "desc": "七个房间连成一条人生线",
+    "rooms": [
+      {
+        "id": "hall",
+        "name": "门厅",
+        "sub": "总论与研究方法",
+        "spots": [
+          {
+            "s": "门垫",
+            "ids": [
+              "发01"
+            ]
+          },
+          {
+            "s": "鞋柜",
+            "ids": [
+              "发02"
+            ]
+          },
+          {
+            "s": "穿衣镜",
+            "ids": [
+              "发03"
+            ]
+          },
+          {
+            "s": "挂衣钩",
+            "ids": [
+              "发04"
+            ]
+          },
+          {
+            "s": "伞架",
+            "ids": [
+              "发05"
+            ]
+          },
+          {
+            "s": "换鞋凳",
+            "ids": [
+              "发06"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "corridor",
+        "name": "走廊",
+        "sub": "婴儿期 → 幼儿期 → 童年期",
+        "spots": [
+          {
+            "s": "地毯",
+            "ids": [
+              "发19"
+            ]
+          },
+          {
+            "s": "门边鞋凳",
+            "ids": [
+              "发20"
+            ]
+          },
+          {
+            "s": "左墙第一幅画",
+            "ids": [
+              "发21"
+            ]
+          },
+          {
+            "s": "左墙第二幅画",
+            "ids": [
+              "发22"
+            ]
+          },
+          {
+            "s": "左墙第三幅画",
+            "ids": [
+              "发23"
+            ]
+          },
+          {
+            "s": "左墙第四幅画",
+            "ids": [
+              "发24"
+            ]
+          },
+          {
+            "s": "挂钩上的外套",
+            "ids": [
+              "发25"
+            ]
+          },
+          {
+            "s": "墙边小柜",
+            "ids": [
+              "发26"
+            ]
+          },
+          {
+            "s": "右墙第一张照片",
+            "ids": [
+              "发27"
+            ]
+          },
+          {
+            "s": "右墙第二张照片",
+            "ids": [
+              "发28"
+            ]
+          },
+          {
+            "s": "右墙第三张照片",
+            "ids": [
+              "发29"
+            ]
+          },
+          {
+            "s": "尽头储物柜",
+            "ids": [
+              "发30"
+            ]
+          },
+          {
+            "s": "尽头窗台",
+            "ids": [
+              "发31"
+            ]
+          },
+          {
+            "s": "尽头挂钟",
+            "ids": [
+              "发32"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "kitchen",
+        "name": "厨房",
+        "sub": "青少年期",
+        "spots": [
+          {
+            "s": "灶台",
+            "ids": [
+              "发33"
+            ]
+          },
+          {
+            "s": "冰箱门",
+            "ids": [
+              "发34"
+            ]
+          },
+          {
+            "s": "餐桌",
+            "ids": [
+              "发35"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "living",
+        "name": "客厅",
+        "sub": "成年期",
+        "spots": [
+          {
+            "s": "沙发",
+            "ids": [
+              "发36a"
+            ]
+          },
+          {
+            "s": "茶几",
+            "ids": [
+              "发36b"
+            ]
+          },
+          {
+            "s": "电视柜",
+            "ids": [
+              "发36c"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bedroom",
+        "name": "卧室",
+        "sub": "晚年",
+        "spots": [
+          {
+            "s": "床",
+            "ids": [
+              "发37"
+            ]
+          },
+          {
+            "s": "床头柜",
+            "ids": [
+              "发38"
+            ]
+          },
+          {
+            "s": "窗帘",
+            "ids": [
+              "发39"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "study",
+        "name": "书房",
+        "sub": "理论：皮亚杰 → 道德",
+        "spots": [
+          {
+            "s": "书架第一层",
+            "ids": [
+              "发07"
+            ]
+          },
+          {
+            "s": "书架第二层",
+            "ids": [
+              "发08"
+            ]
+          },
+          {
+            "s": "书架第三层",
+            "ids": [
+              "发09"
+            ]
+          },
+          {
+            "s": "书桌",
+            "ids": [
+              "发10"
+            ]
+          },
+          {
+            "s": "台灯",
+            "ids": [
+              "发11"
+            ]
+          },
+          {
+            "s": "椅子",
+            "ids": [
+              "发12"
+            ]
+          },
+          {
+            "s": "电脑",
+            "ids": [
+              "发13"
+            ]
+          },
+          {
+            "s": "窗台",
+            "ids": [
+              "发14"
+            ]
+          },
+          {
+            "s": "白板",
+            "ids": [
+              "发15"
+            ]
+          },
+          {
+            "s": "抽屉",
+            "ids": [
+              "发16"
+            ]
+          },
+          {
+            "s": "笔筒",
+            "ids": [
+              "发17"
+            ]
+          },
+          {
+            "s": "文件柜",
+            "ids": [
+              "发18"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "balcony",
+        "name": "阳台",
+        "sub": "必背实验",
+        "spots": [
+          {
+            "s": "洗衣机",
+            "ids": [
+              "实01",
+              "实02"
+            ]
+          },
+          {
+            "s": "洗衣池",
+            "ids": [
+              "实03",
+              "实04"
+            ]
+          },
+          {
+            "s": "晾衣杆",
+            "ids": [
+              "实05",
+              "实06"
+            ]
+          },
+          {
+            "s": "花盆",
+            "ids": [
+              "实07",
+              "实08"
+            ]
+          },
+          {
+            "s": "折叠椅",
+            "ids": [
+              "实09",
+              "实10"
+            ]
+          },
+          {
+            "s": "窗台",
+            "ids": [
+              "实11"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+];
+/* ========================================================== */
+
+var THEMES = [
+  { id:'bo',  name:'蓝橙', paper:'#F3F6F8', deep:'#2E6CA6', soft:'#E3EDF6',
+    rooms:['#D2762E','#2F7FAD','#C0523A','#2E6CA6','#7A5FA8','#3F6E8E','#A8801C'] },
+  { id:'lake', name:'湖蓝', paper:'#EFF4F4', deep:'#2C7A85', soft:'#DCEDEA',
+    rooms:['#4E8CA0','#3C7E8C','#C07A45','#2C7A85','#6E7FA8','#3F6E8E','#8F8B4E'] },
+  { id:'khaki', name:'卡其', paper:'#F3EDE0', deep:'#8A6A3E', soft:'#EBE0CC',
+    rooms:['#A6793F','#7E8A4F','#B06A3E','#5F7B62','#8A6A52','#6E6A44','#9C7B2E'] },
+  { id:'warm', name:'暖橙', paper:'#FBF2E6', deep:'#C0642C', soft:'#F6E3D2',
+    rooms:['#C0642C','#C98A3C','#B5503A','#A87446','#9C6350','#8A6A3E','#B5892B'] }
+];
+
+/* ================= 状态 ================= */
+var S = {
+  view:'home',      // home | palace | card | done | result
+  palace:null,
+  room:null,
+  mode:'recall',    // encode | recall
+  queue:[],
+  i:0,
+  revealed:false,
+  session:{},
+  store: loadStore(),
+  theme: loadTheme(),
+  flash:''
+};
+
+/* ================= 存档 ================= */
+function loadStore(){
+  var out = {};
+  try{
+    var raw = localStorage.getItem(APP.key);
+    if(!raw) return out;
+    var d = JSON.parse(raw);
+    if(!d || typeof d !== 'object' || Array.isArray(d)) return out;
+    Object.keys(d).forEach(function(k){
+      if(!ITEMS[k]) return;
+      var v = d[k];
+      if(!v || typeof v !== 'object') return;
+      if(!Number.isInteger(v.r) || v.r < 0 || v.r > 2) return;
+      if(!Number.isInteger(v.n) || v.n < 0 || v.n > 9999) return;
+      out[k] = { r:v.r, n:v.n, c:(typeof v.c === 'string' ? v.c.slice(0, 60) : '') };
+    });
+  }catch(e){}
+  return out;
+}
+function saveStore(){
+  try{ localStorage.setItem(APP.key, JSON.stringify(S.store)); }catch(e){}
+}
+function loadTheme(){
+  try{
+    var id = localStorage.getItem(APP.themeKey);
+    for(var i = 0; i < THEMES.length; i++){ if(THEMES[i].id === id) return THEMES[i]; }
+  }catch(e){}
+  return THEMES[0];
+}
+function applyTheme(){
+  var t = S.theme, el = document.documentElement.style;
+  el.setProperty('--paper', t.paper);
+  el.setProperty('--deep', t.deep);
+  el.setProperty('--deep-soft', t.soft);
+  try{ localStorage.setItem(APP.themeKey, t.id); }catch(e){}
+}
+
+/* ================= 备份 ================= */
+function exportBackup(){
+  try{
+    var d = new Date();
+    var stamp = d.getFullYear() + String(d.getMonth() + 1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+    var name = '记忆宫殿-备份-' + stamp + '.json';
+    var payload = { app:'palace.frame', v:1, theme:S.theme.id, data:S.store };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    S.flash = '已导出 ' + name;
+  }catch(e){
+    S.flash = '导出失败：' + e.message;
+  }
+  render();
+}
+function importBackup(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var d = JSON.parse(String(reader.result));
+      var data = (d && d.data) ? d.data : d;
+      if(!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('不是备份文件');
+      var ok = 0, skip = 0;
+      Object.keys(data).forEach(function(k){
+        if(!ITEMS[k]){ skip++; return; }
+        var v = data[k];
+        if(!v || typeof v !== 'object' || !Number.isInteger(v.r) || v.r < 0 || v.r > 2){ skip++; return; }
+        S.store[k] = {
+          r: v.r,
+          n: Number.isInteger(v.n) ? v.n : 0,
+          c: typeof v.c === 'string' ? v.c.slice(0, 60) : ''
+        };
+        ok++;
+      });
+      saveStore();
+      if(d && typeof d.theme === 'string'){
+        THEMES.forEach(function(t){ if(t.id === d.theme) S.theme = t; });
+      }
+      S.flash = '导入完成：' + ok + ' 条' + (skip ? '，跳过 ' + skip + ' 条' : '');
+    }catch(e){
+      S.flash = '导入失败：' + e.message;
+    }
+    S.view = 'home';
+    render();
+  };
+  reader.onerror = function(){ S.flash = '读取文件失败'; render(); };
+  reader.readAsText(file);
+}
+
+/* ================= 工具 ================= */
+function shuffle(a){
+  var arr = a.slice();
+  for(var i = arr.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+  }
+  return arr;
+}
+function esc(s){
+  return String(s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function sub(t){ document.getElementById('sub').textContent = t; }
+function roomColor(palace, room){
+  var i = palace.rooms.indexOf(room);
+  if(i < 0) i = 0;
+  return S.theme.rooms[i % S.theme.rooms.length];
+}
+function itemMastered(ids){
+  return ids.every(function(id){ return S.store[id] && S.store[id].r === 2; });
+}
+function palaceStats(palace){
+  var total = 0, done = 0;
+  palace.rooms.forEach(function(r){
+    r.spots.forEach(function(sp){
+      total++;
+      if(itemMastered(sp.ids)) done++;
+    });
+  });
+  return { total: total, done: done };
+}
+function allStats(){
+  var total = 0, done = 0;
+  PALACES.forEach(function(p){
+    var s = palaceStats(p);
+    total += s.total;
+    done += s.done;
+  });
+  return { total: total, done: done };
+}
+function firstNote(ids){
+  for(var i = 0; i < ids.length; i++){
+    var rec = S.store[ids[i]];
+    if(rec && rec.c) return rec.c;
+  }
+  return '';
+}
+
+/* ================= 会话 ================= */
+function startRoom(palace, room, mode){
+  S.palace = palace;
+  S.room = room;
+  S.mode = mode;
+  S.session = {};
+  S.i = 0;
+  S.revealed = false;
+  S.queue = room.spots.map(function(sp){
+    return { room: room, spot: sp.s, ids: sp.ids };
+  });
+  S.view = 'card';
+  render();
+}
+function startAll(palace){
+  S.palace = palace;
+  S.room = null;
+  S.mode = 'recall';
+  S.session = {};
+  S.i = 0;
+  S.revealed = false;
+  S.queue = [];
+  palace.rooms.forEach(function(r){
+    r.spots.forEach(function(sp){
+      S.queue.push({ room: r, spot: sp.s, ids: sp.ids });
+    });
+  });
+  S.queue = shuffle(S.queue);
+  S.view = 'card';
+  render();
+}
+function advanceEncode(){
+  var cur = S.queue[S.i];
+  if(cur){
+    var input = document.getElementById('note');
+    var note = input ? input.value.trim().slice(0, 60) : '';
+    cur.ids.forEach(function(id){
+      var rec = S.store[id] || { r:0, n:0, c:'' };
+      if(note) rec.c = note;
+      S.store[id] = rec;
+    });
+    saveStore();
+  }
+  S.i++;
+  if(S.i >= S.queue.length) S.view = 'done';
+  render();
+}
+function rate(r){
+  var cur = S.queue[S.i];
+  if(!cur) return;
+  cur.ids.forEach(function(id){
+    var rec = S.store[id] || { r:0, n:0, c:'' };
+    rec.r = r;
+    rec.n = (rec.n || 0) + 1;
+    S.store[id] = rec;
+    S.session[id] = r;
+  });
+  saveStore();
+  S.revealed = false;
+  S.i++;
+  if(S.i >= S.queue.length) S.view = 'result';
+  render();
+}
+
+function enterFromHash(){
+  var h = String(location.hash || '').replace('#', '');
+  if(!h) return;
+  for(var i = 0; i < PALACES.length; i++){
+    if(PALACES[i].id === h){ S.palace = PALACES[i]; S.view = 'palace'; return; }
+  }
+}
+
+/* ================= 视图 ================= */
+function viewHome(){
+  var all = allStats();
+
+  var palettes = THEMES.map(function(t){
+    var dots = [t.deep].concat(t.rooms.slice(0, 3)).map(function(c){
+      return '<i style="background:' + c + '"></i>';
+    }).join('');
+    return '<button class="palette' + (t.id === S.theme.id ? ' on' : '') + '" data-act="theme" data-id="' + t.id + '"' +
+             ' style="background:' + t.paper + '">' +
+             '<span class="sw">' + dots + '</span>' +
+             '<span class="pn">' + t.name + '</span>' +
+           '</button>';
+  }).join('');
+
+  var list = PALACES.map(function(p){
+    var st = palaceStats(p);
+    var pct = st.total ? Math.round(st.done / st.total * 100) : 0;
+    return '<button class="palace" data-act="palace" data-id="' + p.id + '">' +
+             '<span class="p-main">' +
+               '<span class="p-name">' + esc(p.name) + '</span>' +
+               '<span class="p-desc">' + esc(p.desc || '') + '</span>' +
+             '</span>' +
+             '<span class="p-prog">' + p.rooms.length + ' 间房 · ' + st.total + ' 处' +
+               '<i>' + pct + '%</i></span>' +
+           '</button>';
+  }).join('');
+
+  return '<p class="pal-lab">配色</p>' +
+         '<div class="palettes">' + palettes + '</div>' +
+         (S.flash ? '<p class="flash">' + esc(S.flash) + '</p>' : '') +
+         '<section class="card intro">' +
+           '<p>地点 → 房间 → 陈设。一个陈设放一条要点，摆放时写一句画面，走宫时靠画面取回来。</p>' +
+           '<p class="dim">共 ' + PALACES.length + ' 个地点 · ' + all.total + ' 处 · 已掌握 ' + all.done + ' 处</p>' +
+           '<div class="progress-all"><i style="width:' + (all.total ? Math.round(all.done / all.total * 100) : 0) + '%"></i></div>' +
+         '</section>' +
+         '<div style="margin-top:14px">' + list + '</div>' +
+         '<button class="btn ghost" data-act="export">导出备份（画面 + 评级）</button>' +
+         '<label class="btn ghost" for="importFile" style="text-align:center">导入备份</label>' +
+         '<input type="file" id="importFile" accept="application/json,.json" style="display:none">' +
+         '<p class="tip">备份是 JSON，换设备或移动文件前先导出。</p>';
+}
+
+function viewPalace(){
+  var p = S.palace;
+  var st = palaceStats(p);
+
+  var list = p.rooms.map(function(r){
+    var ds = 0;
+    r.spots.forEach(function(sp){ if(itemMastered(sp.ids)) ds++; });
+    var c = roomColor(p, r);
+    return '<button class="room" data-act="room" data-id="' + r.id + '">' +
+             '<span class="bar-r" style="background:' + c + '"></span>' +
+             '<span class="r-main">' +
+               '<span class="r-name" style="color:' + c + '">' + esc(r.name) + '</span>' +
+               '<span class="r-sub">' + esc(r.sub || '') + '</span>' +
+             '</span>' +
+             '<span class="r-prog">' + ds + '/' + r.spots.length + '</span>' +
+           '</button>';
+  }).join('');
+
+  return '<button class="back" data-act="home">← 全部地点</button>' +
+         '<section class="card intro" style="margin-bottom:14px">' +
+           '<p><b>' + esc(p.name) + '</b>' + (p.desc ? ' · ' + esc(p.desc) : '') + '</p>' +
+           '<p class="dim">' + p.rooms.length + ' 间房 · 已掌握 ' + st.done + ' / ' + st.total + ' 处</p>' +
+         '</section>' +
+         '<div>' + list + '</div>' +
+         '<button class="btn ghost" data-act="all">全宫抽查（随机 ' + st.total + ' 处）</button>' +
+         '<p class="tip">第一次进房间是摆放模式，之后默认直接考。</p>';
+}
+
+function renderItemBody(ids){
+  return ids.map(function(id){
+    var it = ITEMS[id];
+    var pts = it.pts.map(function(pt){ return '<li>' + pt + '</li>'; }).join('');
+    return '<div class="item-block">' +
+             '<span class="item-no">' + esc(it.no) + '</span>' +
+             (it.tag ? '<span class="tag">' + esc(it.tag) + '</span>' : '') +
+             '<div class="item-title">' + esc(it.title) + '</div>' +
+             '<ul class="pts">' + pts + '</ul>' +
+           '</div>';
+  }).join('');
+}
+
+function viewCard(){
+  var cur = S.queue[S.i];
+  if(!cur) return '';
+  var room = cur.room;
+  var palace = S.palace;
+  var acts = '';
+  if(S.room) acts += '<button class="hint-btn" data-act="reencode">重摆</button>';
+  if(S.mode === 'recall' && !S.revealed) acts += '<button class="hint-btn" data-act="hint">提示编号</button>';
+
+  var head = '<div class="bar">' +
+      '<span class="left"><button class="bar-back" data-act="palace">←</button>' +
+        esc(S.palace.name) + ' · ' + esc(room.name) + ' · ' + (S.i + 1) + ' / ' + S.queue.length + '</span>' +
+      '<span class="acts">' + acts + '</span></div>';
+
+  var cue = (S.mode === 'recall') ? firstNote(cur.ids) : '';
+
+  var loc = '<section class="loc-card" style="border-left-color:' + roomColor(palace, room) + '">' +
+              '<div class="loc-room" style="color:' + roomColor(palace, room) + '">' + esc(room.name) + '</div>' +
+              '<div class="loc-spot">' + esc(cur.spot) + '</div>' +
+              (cue ? '<div class="loc-cue"><b>我的画面</b>' + esc(cue) + '</div>' : '') +
+              (S.mode === 'recall' && !S.revealed
+                ? '<div class="q">这一处放的是哪一条？</div>'
+                : '') +
+            '</section>';
+
+  if(S.mode === 'encode'){
+    var prev = firstNote(cur.ids);
+    return head + loc +
+      '<section class="card">' + renderItemBody(cur.ids) + '</section>' +
+      '<label class="note-label" for="note">写一句画面（一句话就够）</label>' +
+      '<input id="note" class="note" maxlength="60" autocomplete="off" value="' + esc(prev) + '" ' +
+        'placeholder="例：这一处压着一张纸，上面写着三个关键词">' +
+      '<button class="btn primary" data-act="advance">记住了</button>' +
+      '<p class="tip">画面越具体，取回越稳。</p>';
+  }
+
+  if(!S.revealed){
+    return head + loc +
+      '<button class="btn primary" data-act="reveal">看答案</button>' +
+      '<p class="tip">先在脑子里走一遍：位置 → 画面 → 要点。</p>';
+  }
+
+  return head + loc +
+    '<section class="card">' + renderItemBody(cur.ids) + '</section>' +
+    '<div class="rate">' +
+      '<button class="r0" data-act="rate" data-r="0">忘了</button>' +
+      '<button class="r1" data-act="rate" data-r="1">模糊</button>' +
+      '<button class="r2" data-act="rate" data-r="2">记住了</button>' +
+    '</div>';
+}
+
+function viewDone(){
+  return '<div class="score">' +
+           '<div class="score-label" style="font-size:15px">' + esc(S.room.name) + ' 摆完了，共 ' + S.queue.length + ' 处</div>' +
+         '</div>' +
+         '<p class="tip" style="margin-bottom:16px">现在合上书，按路线走一遍。</p>' +
+         '<button class="btn primary" data-act="test">开始回忆</button>' +
+         '<button class="btn ghost" data-act="palace">回房间列表</button>';
+}
+
+function weakQueue(){
+  var out = [];
+  S.queue.forEach(function(q){
+    if(q.ids.some(function(id){ return S.session[id] === 0 || S.session[id] === 1; })) out.push(q);
+  });
+  return out;
+}
+
+function viewResult(){
+  var c = [0,0,0];
+  var ids = [];
+  S.queue.forEach(function(q){ ids = ids.concat(q.ids); });
+  ids.forEach(function(id){
+    var r = S.session[id];
+    if(r === 0 || r === 1 || r === 2) c[r]++;
+  });
+  var total = ids.length;
+  var weak = weakQueue();
+
+  var mainBtn = weak.length
+    ? '<button class="btn primary" data-act="weak">只复习没记住的（' + weak.length + ' 处）</button>' +
+      '<button class="btn ghost" data-act="again">整间再走一遍</button>'
+    : '<button class="btn primary" data-act="again">再走一遍</button>';
+
+  return '<div class="score">' +
+           '<div class="score-num">' + c[2] + '<span style="font-size:18px;color:#A9A194"> / ' + total + ' 条</span></div>' +
+           '<div class="score-label">' + (S.room ? esc(S.room.name) : esc(S.palace.name)) + ' 走完了</div>' +
+         '</div>' +
+         '<div class="breakdown">' +
+           '<div class="b2"><div class="n">' + c[2] + '</div><div class="l">记住了</div></div>' +
+           '<div class="b1"><div class="n">' + c[1] + '</div><div class="l">模糊</div></div>' +
+           '<div class="b0"><div class="n">' + c[0] + '</div><div class="l">忘了</div></div>' +
+         '</div>' +
+         mainBtn +
+         '<button class="btn ghost" data-act="palace">回房间列表</button>' +
+         '<button class="btn ghost" data-act="home">全部地点</button>';
+}
+
+function render(){
+  var app = document.getElementById('app');
+  applyTheme();
+  document.getElementById('appName').textContent = APP.title;
+  if(S.view === 'home'){ app.innerHTML = viewHome(); sub(APP.sub); }
+  else if(S.view === 'palace'){ app.innerHTML = viewPalace(); sub(esc(S.palace.name)); }
+  else if(S.view === 'card'){ app.innerHTML = viewCard(); sub(S.mode === 'encode' ? '摆放模式' : '走宫回忆'); }
+  else if(S.view === 'done'){ app.innerHTML = viewDone(); sub('准备回忆'); }
+  else { app.innerHTML = viewResult(); sub('本间小结'); }
+  window.scrollTo(0, 0);
+}
+
+/* ================= 事件 ================= */
+var app = document.getElementById('app');
+
+app.addEventListener('click', function(e){
+  var el = e.target.closest ? e.target.closest('[data-act]') : null;
+  if(!el) return;
+  var act = el.getAttribute('data-act');
+
+  if(act === 'palace'){
+    if(el.hasAttribute('data-id')){
+      var pid = el.getAttribute('data-id');
+      PALACES.forEach(function(p){ if(p.id === pid) S.palace = p; });
+    }
+    if(!S.palace) return;
+    S.view = 'palace';
+    render();
+  }
+  else if(act === 'room'){
+    var rid = el.getAttribute('data-id');
+    var room = null;
+    S.palace.rooms.forEach(function(r){ if(r.id === rid) room = r; });
+    if(!room) return;
+    var encoded = room.spots.every(function(sp){
+      return sp.ids.some(function(x){ return !!S.store[x]; });
+    });
+    startRoom(S.palace, room, encoded ? 'recall' : 'encode');
+  }
+  else if(act === 'all') startAll(S.palace);
+  else if(act === 'advance') advanceEncode();
+  else if(act === 'reveal'){ S.revealed = true; render(); }
+  else if(act === 'rate') rate(Number(el.getAttribute('data-r')));
+  else if(act === 'test') startRoom(S.palace, S.room, 'recall');
+  else if(act === 'reencode'){ if(S.room) startRoom(S.palace, S.room, 'encode'); }
+  else if(act === 'again'){
+    if(S.room) startRoom(S.palace, S.room, 'recall');
+    else startAll(S.palace);
+  }
+  else if(act === 'weak'){
+    var weak = weakQueue();
+    if(!weak.length) return;
+    S.queue = weak;
+    S.i = 0;
+    S.session = {};
+    S.revealed = false;
+    S.mode = 'recall';
+    S.view = 'card';
+    render();
+  }
+  else if(act === 'theme'){
+    var tid = el.getAttribute('data-id');
+    THEMES.forEach(function(t){ if(t.id === tid) S.theme = t; });
+    applyTheme();
+    render();
+  }
+  else if(act === 'export') exportBackup();
+  else if(act === 'hint'){
+    var cur = S.queue[S.i];
+    if(cur){
+      el.textContent = cur.ids.map(function(id){ return ITEMS[id].no; }).join(' / ');
+      el.style.borderStyle = 'solid';
+    }
+  }
+  else if(act === 'home'){ S.view = 'home'; S.room = null; render(); }
+});
+
+app.addEventListener('keydown', function(e){
+  if(e.key === 'Enter' && e.target && e.target.id === 'note'){
+    e.preventDefault();
+    advanceEncode();
+  }
+});
+
+app.addEventListener('change', function(e){
+  if(e.target && e.target.id === 'importFile' && e.target.files && e.target.files[0]){
+    importBackup(e.target.files[0]);
+  }
+});
+
+applyTheme();
+enterFromHash();
+render();
+})();
+</script>
+</body>
+</html>

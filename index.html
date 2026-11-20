@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mnemonic · 记忆宫殿</title>
 <meta name="description" content="把要记的东西放进熟悉的房间，按路线走一遍取回来。">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#F3F6F8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="记忆宫殿">
 <style>
   :root{
     --paper:#F3F6F8; --ink:#26282B; --accent:#2E6CA6; --orange:#D2762E;
@@ -89,5 +95,12 @@
     <span>单文件 · 无依赖 · 离线可用</span>
   </footer>
 </div>
+<script>
+  if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function () {});
+    });
+  }
+</script>
 </body>
 </html>

@@ -23,9 +23,12 @@ Support | [给我买杯柠檬水](https://mbd.pub/o/bread/mbd-YZaWlZxxbQ==)
 ## 特点
 
 - 单文件 HTML，无外部依赖，双击即开
+- 可安装到桌面，装好后断网也能用
 - 画面提示、三档自评、四套配色
 - 备份导出 / 导入（JSON）
 - 电脑与手机浏览器都能用
+
+> 装到桌面：安卓 Chrome 菜单「安装应用」；iPhone Safari 分享 → 添加到主屏幕。
 
 ## 本地打开
 

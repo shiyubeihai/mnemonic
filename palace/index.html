@@ -111,6 +111,9 @@
   .btn.primary:active{filter:brightness(.92)}
   .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);margin-top:10px}
 
+  .tools{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+  .tools .btn{margin-top:0;padding:10px 4px;font-size:13.5px;border-radius:10px}
+
   .rate{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
   .rate button{
     border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 4px;
@@ -1255,6 +1258,43 @@ function exportBackup(){
   }
   render();
 }
+function exportText(){
+  try{
+    var d = new Date();
+    var stamp = d.getFullYear() + String(d.getMonth() + 1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+    var lines = [];
+    lines.push('记忆宫殿 · 画面清单');
+    lines.push('导出时间：' + d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'));
+    lines.push('');
+    PALACES.forEach(function(p){
+      lines.push('■ ' + p.name + '（' + p.rooms.length + ' 间房）');
+      p.rooms.forEach(function(r){
+        r.spots.forEach(function(sp){
+          sp.ids.forEach(function(id){
+            var it = ITEMS[id], rec = S.store[id];
+            var rate = !rec ? '未评' : (rec.n === 0 ? '已摆未考' : ['忘了','模糊','记住了'][rec.r]);
+            lines.push(r.name + ' · ' + sp.s + ' ｜ ' + it.no + ' ' + it.title + ' ｜ ' + rate);
+            if(rec && rec.c) lines.push('    画面：' + rec.c);
+          });
+        });
+      });
+      lines.push('');
+    });
+    var name = '记忆宫殿-画面清单-' + stamp + '.txt';
+    var blob = new Blob(['﻿' + lines.join('\r\n')], { type:'text/plain;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    S.flash = '已导出 ' + name;
+  }catch(e){
+    S.flash = '导出失败：' + e.message;
+  }
+  render();
+}
 function importBackup(file){
   var reader = new FileReader();
   reader.onload = function(){
@@ -1448,10 +1488,17 @@ function viewHome(){
            '<div class="progress-all"><i style="width:' + (all.total ? Math.round(all.done / all.total * 100) : 0) + '%"></i></div>' +
          '</section>' +
          '<div style="margin-top:14px">' + list + '</div>' +
-         '<button class="btn ghost" data-act="export">导出备份（画面 + 评级）</button>' +
-         '<label class="btn ghost" for="importFile" style="text-align:center">导入备份</label>' +
-         '<input type="file" id="importFile" accept="application/json,.json" style="display:none">' +
-         '<p class="tip">备份是 JSON，换设备或移动文件前先导出。</p>';
+         backupBlock() +
+         '<p class="tip">备份 JSON 可导回；画面清单 TXT 只能看，方便检查自己写了什么。</p>';
+}
+
+function backupBlock(){
+  return '<div class="tools">' +
+           '<button class="btn ghost" data-act="export">导出备份</button>' +
+           '<button class="btn ghost" data-act="text">画面清单</button>' +
+           '<label class="btn ghost" for="importFile" style="text-align:center">导入备份</label>' +
+         '</div>' +
+         '<input type="file" id="importFile" accept="application/json,.json" style="display:none">';
 }
 
 function viewPalace(){
@@ -1477,7 +1524,9 @@ function viewPalace(){
            '<p><b>' + esc(p.name) + '</b>' + (p.desc ? ' · ' + esc(p.desc) : '') + '</p>' +
            '<p class="dim">' + p.rooms.length + ' 间房 · 已掌握 ' + st.done + ' / ' + st.total + ' 处</p>' +
          '</section>' +
-         '<div>' + list + '</div>' +
+         backupBlock() +
+         (S.flash ? '<p class="flash" style="margin:10px 0 0">' + esc(S.flash) + '</p>' : '') +
+         '<div style="margin-top:14px">' + list + '</div>' +
          '<button class="btn ghost" data-act="all">全宫抽查（随机 ' + st.total + ' 处）</button>' +
          '<p class="tip">第一次进房间是摆放模式，之后默认直接考。</p>';
 }
@@ -1660,6 +1709,7 @@ app.addEventListener('click', function(e){
     render();
   }
   else if(act === 'export') exportBackup();
+  else if(act === 'text') exportText();
   else if(act === 'hint'){
     var cur = S.queue[S.i];
     if(cur){

@@ -1,6 +1,6 @@
 /* 记忆宫殿 · Service Worker
    改动任何页面或图标后，必须把 VERSION 加一，否则手机上还是旧版本。 */
-const VERSION = '1.0.1';
+const VERSION = '1.0.3';
 const CACHE = 'mnemonic-' + VERSION;
 
 const ASSETS = [

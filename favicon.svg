@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <circle cx="256" cy="256" r="228" fill="#FDFCFA" stroke="#2B3A42" stroke-width="18"/>
+  <circle cx="256" cy="256" r="228" fill="#EDE6F2"/>
   <text x="256" y="342" text-anchor="middle"
-        font-family="Songti SC, STSong, SimSun, serif" font-size="240" fill="#2B3A42">忆</text>
+        font-family="Songti SC, STSong, SimSun, serif" font-size="240" fill="#574266">忆</text>
+  <circle cx="378" cy="150" r="26" fill="#D8A11C"/>
 </svg>
